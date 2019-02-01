@@ -1,6 +1,6 @@
 <template>
 	
-<div>
+<div id="app">
 	<div>
 		<canvas id="captcha" width="375" height="125"
 			ref="canvas" />
@@ -13,11 +13,25 @@
 			:disabled="prevent"
 			@keyup.enter="submit"
 			ref="input" />
-		<p v-if="valid">符合要求，可以按回车键继续</p>
-		<p v-if="!valid">
-			请尽力确保正确，在输入正确的值之前限制提交。<br/>
-			数字与小写字母，但不包含0, 1, 9, g, l, q, o
-		</p>
+		<p v-if="valid">符合要求，按回车键继续</p>
+		<p v-if="!valid">数字与小写字母，但不包含0, 1, 9, g, l, q, o, 6, b</p>
+	</div>
+	<div id="panel">
+		<table style="display:inline-block">
+			<thead>
+				<th>正确</th>
+				<th>错误</th>
+				<th>总计</th>
+			</thead>
+			<tbody>
+				<td>{{ok}}</td>
+				<td>{{error}}</td>
+				<td>{{ok+error}}</td>
+			</tbody>
+		</table>
+	</div>
+	<div>
+		<button>重置</button>
 	</div>
 </div>
 
@@ -25,14 +39,18 @@
 
 <script>
 import axios from 'axios';
+import Cookie from 'js-cookie';
+
 const THRESHOLD = 150;
-const VALUE_REG = /[2-8a-fhijkmnpr-z]{4}/;
+const VALUE_REG = /[234578ac-fhijkmnpr-z]{4}/;
 
 export default {
 	data() {
 		return {
 			value: '',
 			prevent: false,
+			ok: 0,
+			error: 0
 		}
 	},
 	watch: {
@@ -51,6 +69,16 @@ export default {
 		}
 	},
 	methods: {
+		setOk() {
+			return Cookie.set('ok', ++this.ok);
+		},
+		setError() {
+			return Cookie.set('error', ++this.error);
+		},
+		reset() {
+			Cookie.set('ok', this.ok = 0);
+			Cookie.set('error', this.error = 0);
+		},
 		async submit() {
 			if (!this.valid) {
 				return;
@@ -62,8 +90,11 @@ export default {
 					value: this.value,
 					captcha: this.$refs.canvas.toDataURL('image/png')
 				});
+
+				this.setOk();
 			} finally {
 				this.init();
+				this.setError();
 			}
 		},
 		focus() {
@@ -101,6 +132,22 @@ export default {
 		window.addEventListener('focus', () => {
 			this.focus();
 		});
+
+		const ok = Cookie.get('ok');
+
+		if (ok === undefined) {
+			Cookie.set('ok', 0);
+		}
+
+		this.ok = Number(Cookie.get('ok'));
+
+		const error = Cookie.get('error');
+
+		if (error === undefined) {
+			Cookie.set('error', 0);
+		}
+
+		this.error = Number(Cookie.get('error'));
 	}
 }
 </script>
@@ -110,12 +157,29 @@ export default {
 	border: 1px solid #000;
 	width: 375px;
 	height: 125px;
+	display: inline-block;
 }
 
 #value {
+	display: inline-block;
 	width: 3em;
-	font-size: 72px;
+	font-size: 96px;
 	font-family: 'consolas';
 	text-align: center;
 }
+
+body {
+	height: 100%;
+	overflow: hidden;
+	background: #f5f5d5;
+}
+
+#app {
+	margin-top: 10%;
+}
+
+#app > div {
+	text-align: center;
+}
+
 </style>

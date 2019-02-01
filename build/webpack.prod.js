@@ -11,21 +11,21 @@ module.exports = merge(webpackBase, {
 		rules: [
 			{
 				test: /\.css$/,
-				use: [
+				use: ExtractTextPlugin.extract([
 					'css-loader'
-				],
+				]),
 			},
-			// {
-			// 	test: /\.less$/,
-			// 	use: ExtractTextPlugin.extract([
-			// 		'css-loader',
-			// 		'less-loader'
-			// 	]),
-			// },
+			{
+				test: /\.less$/,
+				use: ExtractTextPlugin.extract([
+					'css-loader',
+					'less-loader'
+				]),
+			},
 		]
 	},
 	plugins: [
-		// new ExtractTextPlugin('style.css'),
+		new ExtractTextPlugin('style.css'),
 		new HtmlWebpackPlugin({
 			template: path.resolve(__dirname, './template/index.html'),
 			minify: true,
