@@ -26,13 +26,15 @@ module.exports = merge(webpackBase, {
 	},
 	devServer: {
 		proxy: {
-			'/captcha': {
-				target: 'https://ebank.eximbank.gov.cn/eweb/GenTokenImg.do', 
-				changeOrigin: true, 
-				pathRewrite: {
-					'^/captcha': ''
-				}
-			}
+			// '/captcha': {
+			// 	target: 'https://ebank.eximbank.gov.cn/eweb/GenTokenImg.do', 
+			// 	changeOrigin: true, 
+			// 	pathRewrite: {
+			// 		'^/captcha': ''
+			// 	}
+			// }
+			'/captcha': 'http://127.0.0.1:3000',
+			'/sample': 'http://127.0.0.1:3000',
 		}
 	},
 	plugins: [

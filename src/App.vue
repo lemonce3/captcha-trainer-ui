@@ -31,7 +31,7 @@
 		</table>
 	</div>
 	<div>
-		<button>重置</button>
+		<button @click="reset">重置</button>
 	</div>
 </div>
 
@@ -49,6 +49,7 @@ export default {
 		return {
 			value: '',
 			prevent: false,
+			session: '',
 			ok: 0,
 			error: 0
 		}
@@ -88,13 +89,15 @@ export default {
 				this.prevent = true;
 				await axios.post('/sample', {
 					value: this.value,
-					captcha: this.$refs.canvas.toDataURL('image/png')
+					captcha: this.$refs.canvas.toDataURL('image/png'),
+					session: this.session
 				});
 
 				this.setOk();
+			} catch (error) {
+				this.setError();
 			} finally {
 				this.init();
-				this.setError();
 			}
 		},
 		focus() {
@@ -103,11 +106,15 @@ export default {
 				this.$refs.input.focus();
 			}, 30);
 		},
-		init() {
+		async init() {
 			this.prevent = true;
 
+			const { data: { captcha, session } } = await axios.get('/captcha');
+
+			this.session = session;
+
 			const captchaImage = new Image();
-			captchaImage.src = `/captcha?time=${Date.now()}`;
+			captchaImage.src = `data:image/jpeg;base64,${captcha}`;
 			captchaImage.onload = () => {
 				this.context.drawImage(captchaImage, 0, 0, 375, 125);
 				const imageData = this.context.getImageData(0, 0, 375, 125);
